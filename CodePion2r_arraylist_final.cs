@@ -17,7 +17,6 @@ public class ArrayList<T> : IEnumerable<T>
     {
         if (capacity < 0)
             throw new ArgumentOutOfRangeException(nameof(capacity), "Capacity cannot be negative.");
-
         _array = new T[capacity];
         _count = 0;
     }
@@ -82,8 +81,18 @@ public class ArrayList<T> : IEnumerable<T>
 
     private void Resize(int? newCapacity)
     {
+        if (newCapacity == null)
+            throw new ArgumentNullException(nameof(newCapacity));
+
         int capacity = newCapacity ?? _array.Length * 2;
         Capacity = capacity;
+
+        if (capacity > _array.Length)
+        {
+            T[] newArray = new T[capacity];
+            Array.Copy(_array, newArray, _array.Length);
+            _array = newArray;
+        }
     }
 
     public void AddRange(IEnumerable<T> collection)
@@ -129,7 +138,80 @@ public class ArrayList<T> : IEnumerable<T>
         _count += count;
     }
 
+    public void RemoveAt(int index)
+    {
+        if (index < 0 || index >= _count)
+            throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
+        Array.Clear(_array, index, 1);
+        _count--;
+
+    }
+
+    public int IndexOf(T item)
+    {
+        return Array.IndexOf(_array, item);
+    }
+
+    public bool Remove(T item)
+    {
+        int index = IndexOf(item);
+        if (index == -1)
+            return false;
+
+        RemoveAt(index);
+        return true;
+    }
+
+    public void RemoveRange(int index, int count)
+    {
+        if (index < 0 || index >= _count)
+            throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
+
+        if (count < 0 || count > _count - index)
+            throw new ArgumentOutOfRangeException(nameof(count), "Count was out of range. Must be non-negative and less than or equal to the size of the collection.");
+
+        Array.Copy(_array, index + count, _array, index, _count - index - count);
+        Array.Clear(_array, _count - count, count);
+        _count -= count;
+    }
+
+    public int LastIndexOf(T item)
+    {
+        return Array.LastIndexOf(_array, item, _count - 1, _count);
+    }
+
+    public bool Contains(T item)
+    {
+        return IndexOf(item) != -1;
+    }
+
+    public void Clear()
+    {
+        Array.Clear(_array, 0, _count);
+        _count = 0;
+    }
+
+    public T[] ToArray()
+    {
+        T[] array = new T[_count];
+        Array.Copy(_array, array, _count);
+        return array;
+    }
+
+    public void CopyTo(T[] array, int arrayIndex)
+    {
+        if (array == null)
+            throw new ArgumentNullException(nameof(array), "Array is null.");
+
+        if (arrayIndex < 0 || arrayIndex >= array.Length)
+            throw new ArgumentOutOfRangeException(nameof(arrayIndex), "Array index was out of range.");
+
+        if (_count > array.Length - arrayIndex)
+            throw new ArgumentException("The number of elements in the source ArrayList is greater than the available space from the destination array.");
+
+        Array.Copy(_array, 0, array, arrayIndex, _count);
+    }
 
 
     public IEnumerator<T> GetEnumerator()
