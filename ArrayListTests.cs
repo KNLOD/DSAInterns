@@ -36,9 +36,10 @@ namespace ArrayListlib_Tests
         public void AddRange_MultipleElements_ShouldAddToArrayList()
         {
             var list = new ArrayList<int>();
+            const int EXPECTED_COUNT = 3;
             list.AddRange(new int[] { 1, 2, 3 });
 
-            Assert.AreEqual(3, list.Count);
+            Assert.AreEqual(EXPECTED_COUNT, list.Count);
             Assert.AreEqual(1, list[0]);
             Assert.AreEqual(2, list[1]);
             Assert.AreEqual(3, list[2]);
@@ -52,6 +53,8 @@ namespace ArrayListlib_Tests
             list.Remove(42);
 
             Assert.AreEqual(0, list.Count);
+            try { var x = list[0]; throw new AssertFailedException(); }
+            catch (System.ArgumentOutOfRangeException) { }
         }
 
         [TestMethod]
@@ -61,8 +64,10 @@ namespace ArrayListlib_Tests
             list.AddRange(new int[] { 1, 2, 3 });
             list.Clear();
 
-            
+
             Assert.AreEqual(0, list.Count);
+            try { var x = list[0]; throw new AssertFailedException(); }
+            catch (System.ArgumentOutOfRangeException) { }
         }
 
         [TestMethod]

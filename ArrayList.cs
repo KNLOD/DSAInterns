@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 
 
@@ -35,23 +36,7 @@ namespace DataStructures
             _count = _array.Length;
         }
 
-        public int Capacity
-        {
-            get => _array.Length;
-
-            set
-            {
-                if (value < _count)
-                    throw new ArgumentOutOfRangeException(nameof(value), "Capacity cannot be less than Count.");
-
-                if (value != _array.Length)
-                {
-                    T[] newArray = new T[value];
-                    Array.Copy(_array, newArray, _count);
-                    _array = newArray;
-                }
-            }
-        }
+        public int Capacity { get; private set; }
 
         public int Count => _count;
 
@@ -86,16 +71,26 @@ namespace DataStructures
 
         private void Resize(int? newCapacity)
         {
-            int capacity = newCapacity ?? _array.Length * 2;
-            Capacity = capacity;
-
             if (newCapacity == null)
-                newCapacity = capacity;
-
-            if (capacity > _array.Length)
             {
-                T[] newArray = new T[capacity];
+                newCapacity = _array.Length * 2;
+                Capacity = (int)newCapacity;
+            }
+            else if (newCapacity != null)
+            {
+                Capacity = (int)newCapacity;
+            }
+
+            if (Capacity > _array.Length)
+            {
+                T[] newArray = new T[Capacity];
                 Array.Copy(_array, newArray, _array.Length);
+                _array = newArray;
+            }
+            else if (Capacity < _array.Length)
+            {
+                T[] newArray = new T[Capacity];
+                Array.Copy(_array, newArray, Capacity);
                 _array = newArray;
             }
         }
@@ -127,20 +122,20 @@ namespace DataStructures
             if (collection == null)
                 throw new ArgumentNullException(nameof(collection));
 
-            int count = collection.Count();
+            int range_count = collection.Count();
 
-            if (index < 0 || index > _count)
+            if (index < 0 || index > this._count)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than or equal to the size of the collection.");
 
-            if (_count + count > _array.Length)
+            if (this._count + range_count > _array.Length)
                 Resize(null);
 
-            Array.Copy(_array, index, _array, index + count, _count - index);
+            Array.Copy(_array, index, _array, index + range_count, this._count - index);
             int i = index;
             foreach (T item in collection)
                 _array[i++] = item;
 
-            _count += count;
+            this._count += range_count;
         }
 
         public void RemoveAt(int index)
@@ -170,15 +165,15 @@ namespace DataStructures
 
         public void RemoveRange(int index, int count)
         {
-            if (index < 0 || index >= _count)
+            if (index < 0 || index >= this._count)
                 throw new ArgumentOutOfRangeException(nameof(index), "Index was out of range. Must be non-negative and less than the size of the collection.");
 
-            if (count < 0 || count > _count - index)
+            if (count < 0 || count > this._count - index)
                 throw new ArgumentOutOfRangeException(nameof(count), "Count was out of range. Must be non-negative and less than or equal to the size of the collection.");
 
-            Array.Copy(_array, index + count, _array, index, _count - index - count);
-            Array.Clear(_array, _count - count, count);
-            _count -= count;
+            Array.Copy(_array, index + count, _array, index, this._count - index - count);
+            Array.Clear(_array, this._count - count, count);
+            this._count -= count;
         }
 
         public int LastIndexOf(T item)
@@ -215,7 +210,7 @@ namespace DataStructures
             if (_count > array.Length - arrayIndex)
                 throw new ArgumentException("The number of elements in the source ArrayList is greater than the available space from the destination array.");
 
-            Array.Copy(_array, 0, array, arrayIndex, _count);
+            Array.Copy(this._array, 0, array, arrayIndex, _count);
         }
 
 
